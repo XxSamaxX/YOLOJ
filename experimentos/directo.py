@@ -39,12 +39,16 @@ PAGINA = """<!doctype html><meta charset=utf-8><title>YOLOJ en directo</title>
 <style>body{background:#111;color:#ddd;font:16px sans-serif;margin:16px;text-align:center}
 img{max-width:100%;border:1px solid #333}input{width:min(720px,80%);font-size:18px;padding:8px;margin:12px 0}
 #e{font-family:monospace;white-space:pre;color:#9c9}</style>
-<img src=/video><br>
+<img id=v><br>
 <input id=q autofocus placeholder="bottle; Is anyone wearing glasses?  (Intro para enviar)">
 <div id=e></div>
 <script>
 q.onkeydown=e=>{if(e.key=="Enter")fetch("/pregunta",{method:"POST",body:q.value})}
-setInterval(async()=>{e.textContent=await(await fetch("/estado")).text()},500)
+setInterval(async()=>{try{e.textContent=await(await fetch("/estado")).text()}catch(x){e.textContent="sin conexion con directo.py"}},500)
+// fotograma a fotograma en vez de un flujo continuo: si una peticion falla, la siguiente lo recupera
+;(async()=>{for(;;){try{const r=await fetch("/foto?"+Date.now());if(r.ok){const u=URL.createObjectURL(await r.blob());
+await new Promise(ok=>{v.onload=v.onerror=ok;v.src=u});URL.revokeObjectURL(u)}}catch(x){}
+await new Promise(ok=>setTimeout(ok,50))}})()
 </script>"""
 
 
@@ -53,6 +57,7 @@ class Estado:
         self.candado = threading.Lock()
         self.fotograma: Image.Image | None = None
         self.n = 0                      # cuantos fotogramas han llegado
+        self.t_fotograma = 0.0          # cuando llego el ultimo
         self.preguntas: list[str] = []
         self.puntos: list[dict] = []    # del ultimo fotograma analizado
         self.ms = {}
@@ -71,7 +76,7 @@ def leer_video(est: Estado, fuente: str, ancho: int, alto: int) -> None:
             return
         img = Image.frombuffer("RGB", (ancho, alto), datos, "raw", "RGB", 0, 1)
         with est.candado:
-            est.fotograma, est.n = img, est.n + 1
+            est.fotograma, est.n, est.t_fotograma = img, est.n + 1, time.monotonic()
 
 
 def pico(m: np.ndarray) -> tuple[float, float]:
@@ -113,6 +118,7 @@ def mirar(est: Estado, modelo, proc, lado: int, corte: float) -> None:
             est.puntos = puntos
             est.ms = {"prefijo": (t1 - t0) * 1000, "preguntas": (t2 - t1) * 1000, "rejilla": pre.rejilla}
             est.error = ""
+            time.sleep(0.03)                        # un respiro: el escritorio pinta con la misma grafica
         except Exception as e:                      # una pregunta rara no debe tumbar el directo
             est.error = f"{type(e).__name__}: {e}"[:300]
             time.sleep(0.5)
@@ -161,12 +167,15 @@ def servidor(est: Estado, puerto: int) -> ThreadingHTTPServer:
             elif self.path == "/estado":
                 ms = est.ms
                 lineas = [est.error] if est.error else []
+                if time.monotonic() - est.t_fotograma > 2:
+                    lineas.append("sin senal de la camara desde hace %.0f s" % (time.monotonic() - est.t_fotograma)
+                                  if est.n else "esperando a la camara")
                 if ms and est.puntos:
                     total = ms["prefijo"] + ms["preguntas"]
                     lineas.append(f"{1000 / total:.1f} analisis por segundo   (imagen {ms['prefijo']:.0f} ms + preguntas "
                                   f"{ms['preguntas']:.0f} ms, rejilla {ms['rejilla'][0]}x{ms['rejilla'][1]})")
                 self._enviar("text/plain; charset=utf-8", "\n".join(lineas).encode())
-            elif self.path == "/foto":
+            elif self.path.startswith("/foto"):
                 j = jpeg()
                 self._enviar("image/jpeg", j) if j else self.send_error(503)
             elif self.path == "/video":
