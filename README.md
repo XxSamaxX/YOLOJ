@@ -273,6 +273,11 @@ python experimentos/directo.py            # webcam on /dev/video10, then open ht
 python experimentos/directo.py --fuente video.mp4 --lado 960
 ```
 
+[![live demo](docs/demo.jpg)](docs/demo.mp4)
+
+*Click for the recording ([docs/demo.mp4](docs/demo.mp4), 4 min, 8 MB): questions
+typed one after another on a webcam stream, unedited.*
+
 Type a name, a full question, or several separated by `;`. Each "yes" gets a
 point on the video. Only the 4B runs: about 5 analyses per second with five
 predicates at 640 px, 6–7 with one, 9.4 GiB. Questions in English.
