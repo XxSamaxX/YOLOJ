@@ -147,3 +147,45 @@ a result.
 
 *Rows: remote, cat, dog (absent), television, racket. Columns: the four heads
 and their sum. The dot on the cat's back in the right-hand columns is the sink.*
+
+## COCO: do the heads hold up on images they were not picked on?
+
+400 COCO val2017 images, one present and one absent category each
+(`experimentos/coco_atencion.py`). Heads are chosen on the first 200 and
+measured on the other 200 (`experimentos/coco_cabezas.py`), against the real
+segmentation mask on the 32-pixel token grid. Objects cover 0.5–30 % of the
+image. 13 October 2026.
+
+**Pointing game** — does the peak of the map land on the object? Held-out half:
+
+| Map | Hit rate | AUC |
+|---|---|---|
+| Chance (object area) | 10.6 % | 0.500 |
+| Centre of the image | 29.0 % | 0.650 |
+| Mean of all 1,152 heads, raw | 1.5 % | 0.648 |
+| Head 20.15 alone, raw | 59.5 % | 0.837 |
+| Head 20.15 alone, relative | 71.5 % | 0.880 |
+| **5 chosen heads, relative** | **78.5 %** | **0.892** |
+
+"Relative" divides each head's map by the same head's map for a content-free
+question on the same image. That removes the sink better than masking the three
+most-attended cells (59–64 %). It costs one extra forward per image, shared by
+every predicate asked about it.
+
+The best heads are all in layers 20–22. Head 20.15, spotted by eye on two
+photos in the first pass, is also the best one on 198 images.
+
+**Presence** — same image, object asked about present vs absent:
+
+| Signal | AUC |
+|---|---|
+| Logit gap, last layer | 0.996 |
+| Attention mass of 3 chosen heads | 0.992 |
+
+**Early exit** — the gap read at each layer: chance up to layer 21, 96.5 % sign
+accuracy at layer 24, and 96.5 % at layer 35. Layers 25–35 sharpen the gap (AUC
+0.969 → 0.996) without changing which side it falls on.
+
+Limits: absent categories are random, so they are easy negatives; the pointing
+game accepts any cell at least a quarter covered; one category per image, and
+several instances count as one target. This is not a detection benchmark yet.
