@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "YOLOJ: where a vision-language model looks when it answers yes or no"
+message: "If you use this software or its measurements, please cite it."
+type: software
+authors:
+  - family-names: "Otero Agraso"
+    given-names: "Samuel"
+repository-code: "https://github.com/XxSamaxX/YOLOJ"
+license: MIT
+date-released: "2026-10-13"
+keywords:
+  - vision-language model
+  - attention
+  - training-free localisation
+  - logit readout
+  - segmentation
