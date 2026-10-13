@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yoloj"
+version = "0.0.1"
+description = "A feature pyramid made of questions: yes/no predicates read from a VLM's logits at several scales"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Samuel Otero Agraso", email = "oteroagrasosamuel@gmail.com"}]
+keywords = ["vision-language-model", "open-vocabulary", "logits", "feature-pyramid",
+            "llama-cpp", "qwen"]
+dependencies = [
+  "requests>=2.31",
+  "pillow>=10.1",            # ImageFont.load_default(size=...)
+]
+
+[project.urls]
+Homepage = "https://github.com/XxSamaxX/YOLOJ"
+
+[project.scripts]
+yoloj = "yoloj.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["yoloj*"]
