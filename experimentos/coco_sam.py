@@ -29,9 +29,13 @@ from coco_mascara import CABEZAS, mapa
 UMBRAL = 0.5          # del maximo del mapa; elegido en la mitad A por coco_mascara.py
 
 
-def cargar_sam(nombre: str):
-    modelo = transformers.Sam2Model.from_pretrained(nombre, dtype=torch.bfloat16).to("cuda:0").eval()
-    return modelo, transformers.Sam2Processor.from_pretrained(nombre)
+def cargar_sam(nombre: str, dtype=torch.bfloat16):
+    # SAM 3 trae dos modelos en el mismo repo; el que acepta puntos es el "tracker"
+    if "sam3" in nombre:
+        clase, clase_proc = transformers.Sam3TrackerModel, transformers.Sam3TrackerProcessor
+    else:
+        clase, clase_proc = transformers.Sam2Model, transformers.Sam2Processor
+    return clase.from_pretrained(nombre, dtype=dtype).to("cuda:0").eval(), clase_proc.from_pretrained(nombre)
 
 
 def picos(m: np.ndarray, n: int, separacion: int = 3) -> list[tuple[int, int]]:
@@ -68,7 +72,7 @@ def segmentar(sam, proc, img: Image.Image, puntos=None, etiquetas=None, caja=Non
     if caja is not None:
         extra["input_boxes"] = [[caja]]
     ent = proc(images=img, return_tensors="pt", **extra).to("cuda:0")
-    ent["pixel_values"] = ent["pixel_values"].to(torch.bfloat16)
+    ent["pixel_values"] = ent["pixel_values"].to(sam.dtype)
     sal = sam(**ent, multimask_output=True)
     masc = proc.post_process_masks(sal.pred_masks.float().cpu(), ent["original_sizes"])[0][0]
     return masc.numpy() > 0, sal.iou_scores.float().cpu().numpy()[0, 0]
@@ -86,6 +90,24 @@ def caja_de(m: np.ndarray) -> np.ndarray:
     return c
 
 
+def n_trozos(masc: np.ndarray, lado: int = 256) -> int:
+    """Componentes conexas de una mascara, a baja resolucion.
+
+    Cada pixel empieza con su numero y en cada paso toma el mayor de sus vecinos
+    dentro de la mascara; al estabilizarse queda un numero por trozo.
+    """
+    t = torch.from_numpy(masc).to("cuda:0")[None, None].float()
+    f = lado / max(masc.shape)
+    t = torch.nn.functional.interpolate(t, size=(round(masc.shape[0] * f), round(masc.shape[1] * f)), mode="nearest")
+    ids = (torch.arange(t.numel(), device=t.device).view_as(t) + 1).float() * t
+    while True:
+        nuevo = torch.nn.functional.max_pool2d(ids, 3, 1, 1) * t
+        if torch.equal(nuevo, ids):
+            break
+        ids = nuevo
+    return int((torch.unique(ids) > 0).sum())
+
+
 def acuerdo(masc: np.ndarray, m: np.ndarray) -> float:
     """Cuanto coincide una mascara con el mapa de atencion umbralizado, en la rejilla."""
     gh, gw = m.shape
@@ -101,7 +123,7 @@ def calidad(sam, proc, datos: Path) -> None:
         anots[(a["image_id"], a["category_id"])].append(a)
 
     filas = defaultdict(list)
-    tiempos = []
+    tiempos, trozos = [], []
     for f in json.loads((datos / "indice.json").read_text()):
         if f["mitad"] != "B":
             continue
@@ -127,6 +149,9 @@ def calidad(sam, proc, datos: Path) -> None:
         formas["caja del mapa"] = segmentar(sam, proc, img, caja=caja)
         formas["caja + 1 punto"] = segmentar(sam, proc, img, p1, [1], caja=caja)
 
+        # en cuantos trozos sueltos sale la mascara: un borde deshilachado deja muchos
+        elegida = formas["1 punto"][0][int(np.argmax([acuerdo(x, m) for x in formas["1 punto"][0]]))]
+        trozos.append(n_trozos(elegida))
         for nombre, (masc, punt) in formas.items():
             for criterio, k in (("la que SAM puntua mas", int(punt.argmax())),
                                 ("la que mas coincide con el mapa", int(np.argmax([acuerdo(x, m) for x in masc])))):
@@ -137,7 +162,9 @@ def calidad(sam, proc, datos: Path) -> None:
                  f["instancias"], f["area"]))
 
     n = len(next(iter(filas.values())))
-    print(f"mitad B, {n} imagenes, al pixel. SAM: {np.median(tiempos):.0f} ms por imagen (codificar + 1 indicacion)\n")
+    print(f"mitad B, {n} imagenes, al pixel. SAM: {np.median(tiempos):.0f} ms por imagen (codificar + 1 indicacion)")
+    print(f"trozos sueltos por mascara (1 punto, elegida por el mapa): mediana {np.median(trozos):.0f}, media {np.mean(trozos):.1f}, "
+          f"con mas de 5 trozos: {(np.array(trozos) > 5).mean():.0%}\n")
     print(f"{'indicacion':16s} {'mascara elegida':32s} IoU masc.  IoU caja  cajas>=0,5  (1 instancia / varias)")
     for (nombre, criterio), v in filas.items():
         v = np.array(v)
@@ -202,8 +229,10 @@ def main() -> None:
     p.add_argument("--sam", default="facebook/sam2.1-hiera-small")
     p.add_argument("--datos", default="out/coco")
     p.add_argument("--tiempos", action="store_true")
+    p.add_argument("--fp32", action="store_true", help="SAM en 32 bits en vez de bf16")
     a = p.parse_args()
-    sam, proc = cargar_sam(a.sam)
+    sam, proc = cargar_sam(a.sam, torch.float32 if a.fp32 else torch.bfloat16)
+    print("32 bits" if a.fp32 else "bf16")
     print(f"{a.sam}: {sum(x.numel() for x in sam.parameters()) / 1e6:.0f} M de parametros, "
           f"{torch.cuda.memory_allocated() / 2**30:.2f} GiB")
     if a.tiempos:
