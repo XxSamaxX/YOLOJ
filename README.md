@@ -226,3 +226,37 @@ Everything fits on a 12 GB card, and SAM is the cheap part:
 Weak spots: several instances (one point gives one mask, the target is their
 union), objects under 3 % of the image (31–32 % of boxes), and the 21.5 % of
 images where the peak is off the object to begin with.
+
+## The image once, the questions in a batch
+
+Every question about an image shares the start of the prompt: system message
+plus image, 338 of ~385 tokens. `experimentos/prefijo.py` runs that prefix once,
+keeps its key/value cache, and feeds the questions as a batch of ~45-token
+suffixes on top of it.
+
+Same answers as the plain forward, on 30 images × 3 questions: the gap moves by
+0.26 nats on average (1.0 at most, on gaps of ±20), the sign matches 90 / 90,
+and the head maps correlate at 0.99 on average (0.83 at worst).
+
+| | Plain forwards | Shared prefix |
+|---|---|---|
+| Image + predicate + content-free question | 259 ms | 133 + 34 = 167 ms |
+| Each further predicate on the same image | 128 ms | 12–17 ms |
+| All 80 COCO classes on one image | ~10.5 s | 133 ms + 1.1 s |
+
+The 133 ms of the prefix are 49 ms of vision encoder and 85 ms of language
+model; preparing the image on the CPU takes 2 ms. At 448×336 the whole forward
+drops to 83 ms (140 image tokens), at 320×240 to 55 ms (80 tokens); accuracy at
+those sizes is not measured.
+
+The times are per stage, measured separately; the full chain with SAM has not
+been re-timed end to end with the shared prefix.
+
+## One mask per peak: no gain
+
+`experimentos/coco_instancias.py` passes each peak of the map to SAM as its own
+object and joins the masks, with the number of peaks and their threshold chosen
+on the first half. On the held-out half it helps images with several instances
+(24 % → 30 % of boxes with IoU ≥ 0.5) and hurts those with one (70 % → 66 %):
+54.5 % overall against 55.0 % for a single peak. The +8 points it showed on the
+tuning half did not carry over.
