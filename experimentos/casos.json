@@ -1,0 +1,7 @@
+[
+ {"imagen": "/home/sama/jev/discern/data/img/gatos_sofa.jpg", "pregunta": "Is there a remote control in the image?", "palabra": "remote"},
+ {"imagen": "/home/sama/jev/discern/data/img/gatos_sofa.jpg", "pregunta": "Is there a cat in the image?", "palabra": "cat"},
+ {"imagen": "/home/sama/jev/discern/data/img/gatos_sofa.jpg", "pregunta": "Is there a dog in the image?", "palabra": "dog"},
+ {"imagen": "/home/sama/jev/discern/data/img/sala_tv.jpg", "pregunta": "Is there a television in the image?", "palabra": "television"},
+ {"imagen": "/home/sama/jev/discern/data/img/tenis_ninos.jpg", "pregunta": "Is there a tennis racket in the image?", "palabra": "racket"}
+]

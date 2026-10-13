@@ -118,3 +118,32 @@ The prompt contract and the readout come from
 val2017; the photographs are from Flickr and keep their original licences.
 
 MIT licence.
+
+## Inside the 4B: where the answer is made
+
+`experimentos/desgrane.py` runs Qwen3-VL-4B once per (image, predicate) in
+transformers and keeps every layer's attention and hidden state. First pass,
+five cases on three COCO images, 13 October 2026. Read by eye; the heads below
+were picked on two of the same images they are shown on, so this is a lead, not
+a result.
+
+- **The answer appears at layer 24 of 36.** Reading the yes/no gap from each
+  layer's hidden state gives noise (+0.5 to +3, always leaning to `A`) up to
+  layer 23, then ±7 to ±9 with the right sign at layer 24 in all five cases, and
+  ±19 to ±22 at the last layer.
+- **The model looks at the image in layers 17 to 23**, just before deciding.
+- **A sink token eats the late attention.** From layer 18 on, 65–78 % of the
+  attention to the image goes to one patch that does not change with the
+  question. Averaging heads shows only that patch.
+- **A few heads in layers 20–21 point at the object.** Heads 20.15, 21.31, 21.8
+  and 21.25 put 25–51 % of their image attention inside the remote controls
+  (6 % of the grid) and 49–76 % inside the television (8 %).
+- **Their attention mass drops when the object is absent**: 0.21 / 0.21 for
+  "remote", 0.02 / 0.08 for "dog" on the same photo.
+- **Attention is nearly free**: 126 ms per forward without it, 123–169 ms with
+  every layer's attention returned. 8.3 GiB of VRAM in bf16.
+
+![heads](docs/cabezas.png)
+
+*Rows: remote, cat, dog (absent), television, racket. Columns: the four heads
+and their sum. The dot on the cat's back in the right-hand columns is the sink.*
