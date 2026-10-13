@@ -6,3 +6,11 @@ build/
 dist/
 out/
 data/
+
+# LaTeX
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk

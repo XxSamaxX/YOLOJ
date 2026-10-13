@@ -1,0 +1,124 @@
+\begin{thebibliography}{10}
+
+\bibitem{qwen3vl}
+Shuai Bai et~al.
+\newblock {Qwen3-VL} technical report.
+\newblock {\em arXiv preprint arXiv:2511.21631}, 2025.
+
+\bibitem{carion2025sam3}
+Nicolas Carion et~al.
+\newblock {SAM} 3: Segment anything with concepts.
+\newblock {\em arXiv preprint arXiv:2511.16719}, 2025.
+
+\bibitem{chen2024fastv}
+Liang Chen, Haozhe Zhao, Tianyu Liu, Shuai Bai, Junyang Lin, Chang Zhou, and
+  Baobao Chang.
+\newblock An image is worth 1/2 tokens after layer 2: Plug-and-play inference
+  acceleration for large vision-language models.
+\newblock In {\em European Conference on Computer Vision (ECCV)}, 2024.
+
+\bibitem{cheng2024seeclick}
+Kanzhi Cheng, Qiushi Sun, Yougang Chu, Fangzhi Xu, Yantao Li, Jianbing Zhang,
+  and Zhiyong Wu.
+\newblock {SeeClick}: Harnessing {GUI} grounding for advanced visual {GUI}
+  agents.
+\newblock In {\em Annual Meeting of the Association for Computational
+  Linguistics (ACL)}, 2024.
+
+\bibitem{cheng2024yoloworld}
+Tianheng Cheng, Lin Song, Yixiao Ge, Wenyu Liu, Xinggang Wang, and Ying Shan.
+\newblock {YOLO-World}: Real-time open-vocabulary object detection.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, 2024.
+
+\bibitem{darcet2024registers}
+Timoth{\'e}e Darcet, Maxime Oquab, Julien Mairal, and Piotr Bojanowski.
+\newblock Vision transformers need registers.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2024.
+
+\bibitem{kang2025heads}
+Seil Kang, Jinyeong Kim, Junhyeok Kim, and Seong~Jae Hwang.
+\newblock Your large vision-language model only needs a few attention heads for
+  visual grounding.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, 2025.
+
+\bibitem{kirillov2023sam}
+Alexander Kirillov et~al.
+\newblock Segment anything.
+\newblock In {\em IEEE/CVF International Conference on Computer Vision (ICCV)},
+  2023.
+
+\bibitem{lai2024lisa}
+Xin Lai, Zhuotao Tian, Yukang Chen, Yanwei Li, Yuhui Yuan, Shu Liu, and Jiaya
+  Jia.
+\newblock {LISA}: Reasoning segmentation via large language model.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, 2024.
+
+\bibitem{semif}
+Theo C.~J. Lee.
+\newblock {SemIf}: Open baselines for runtime-defined semantic decisions, 2025.
+\newblock \url{https://github.com/TheoLeeCJ/SemIf}.
+
+\bibitem{li2023pope}
+Yifan Li, Yifan Du, Kun Zhou, Jinpeng Wang, Wayne~Xin Zhao, and Ji-Rong Wen.
+\newblock Evaluating object hallucination in large vision-language models.
+\newblock In {\em Conference on Empirical Methods in Natural Language
+  Processing (EMNLP)}, 2023.
+
+\bibitem{lin2014coco}
+Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva
+  Ramanan, Piotr Doll{\'a}r, and C.~Lawrence Zitnick.
+\newblock Microsoft {COCO}: Common objects in context.
+\newblock In {\em European Conference on Computer Vision (ECCV)}, 2014.
+
+\bibitem{liu2024groundingdino}
+Shilong Liu, Zhaoyang Zeng, Tianhe Ren, Feng Li, Hao Zhang, Jie Yang, Qing
+  Jiang, Chunyuan Li, Jianwei Yang, Hang Su, Jun Zhu, and Lei Zhang.
+\newblock Grounding {DINO}: Marrying {DINO} with grounded pre-training for
+  open-set object detection.
+\newblock In {\em European Conference on Computer Vision (ECCV)}, 2024.
+
+\bibitem{jevcpu}
+Meanblock.
+\newblock {JEV-CPU}: Semantic ifs from open models on a laptop {CPU}, 2026.
+\newblock \url{https://huggingface.co/Meanblock/JEV-CPU}.
+
+\bibitem{discern}
+Samuel Otero~Agraso.
+\newblock discern: Semantic ifs over images from vision--language logits, 2026.
+\newblock \url{https://github.com/XxSamaxX/discern},
+  doi:10.5281/zenodo.22899311.
+
+\bibitem{ravi2024sam2}
+Nikhila Ravi et~al.
+\newblock {SAM} 2: Segment anything in images and videos.
+\newblock {\em arXiv preprint arXiv:2408.00714}, 2024.
+
+\bibitem{redmon2016yolo}
+Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi.
+\newblock You only look once: Unified, real-time object detection.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition
+  (CVPR)}, 2016.
+
+\bibitem{siglip2}
+Michael Tschannen et~al.
+\newblock {SigLIP} 2: Multilingual vision-language encoders with improved
+  semantic understanding, localization, and dense features.
+\newblock {\em arXiv preprint arXiv:2502.14786}, 2025.
+
+\bibitem{zhang2016pointing}
+Jianming Zhang, Zhe Lin, Jonathan Brandt, Xiaohui Shen, and Stan Sclaroff.
+\newblock Top-down neural attention by excitation backprop.
+\newblock In {\em European Conference on Computer Vision (ECCV)}, 2016.
+
+\bibitem{zhang2025mllms}
+Jiarui Zhang, Mahyar Khayatkhoei, Prateek Chhikara, and Filip Ilievski.
+\newblock {MLLMs} know where to look: Training-free perception of small visual
+  details with multimodal {LLMs}.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2025.
+
+\end{thebibliography}
