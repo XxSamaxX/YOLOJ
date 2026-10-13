@@ -189,3 +189,40 @@ accuracy at layer 24, and 96.5 % at layer 35. Layers 25–35 sharpen the gap (AU
 Limits: absent categories are random, so they are easy negatives; the pointing
 game accepts any cell at least a quarter covered; one category per image, and
 several instances count as one target. This is not a detection benchmark yet.
+
+## From attention to a mask: SAM 2.1 prompted by the peak
+
+The attention map says where, not how far the object extends: thresholded on
+its own it reaches a mask IoU of 0.36 on the held-out half, and 42 % of its
+boxes overlap the real one by half or more (`experimentos/coco_mascara.py`).
+Each cell is 32 px wide, so it is a blob by construction.
+
+`experimentos/coco_sam.py` hands the peak of the map to SAM 2.1 as a point and
+keeps, of SAM's three candidate masks, the one that best matches the thresholded
+map. Pixel-level, against the real COCO mask, same 200 held-out images:
+
+| | Mask IoU | Boxes with IoU ≥ 0.5 | one instance / several |
+|---|---|---|---|
+| Attention alone (grid resolution) | 0.36 | 42 % | 39 % / 48 % |
+| + SAM 2.1 small, 1 point | 0.53 | 54.5 % | 69 % / 24 % |
+| + SAM 2.1 large, 1 point | 0.55 | 58.0 % | 74 % / 26 % |
+| Ceiling: best of SAM's 3 masks (large) | 0.62 | 67.5 % | 85 % / 32 % |
+
+Picking the candidate by agreement with the map beats picking SAM's own top
+score (58.0 % against 48.5 %, large). A box from the map plus the point helps
+when there are several instances (42 %) and hurts when there is one.
+
+Everything fits on a 12 GB card, and SAM is the cheap part:
+
+| Stage | SAM small | SAM large |
+|---|---|---|
+| Predicate forward (4B) | 128 ms | 129 ms |
+| Content-free forward (4B), once per image | 131 ms | 131 ms |
+| SAM, encode + one prompt | 22 ms | 73 ms |
+| **Total, image + first predicate** | **281 ms** | **333 ms** |
+| Each further predicate on the same image | 151 ms | 202 ms |
+| Peak VRAM, both models | 9.0 GiB | 9.3 GiB |
+
+Weak spots: several instances (one point gives one mask, the target is their
+union), objects under 3 % of the image (31–32 % of boxes), and the 21.5 % of
+images where the peak is off the object to begin with.
